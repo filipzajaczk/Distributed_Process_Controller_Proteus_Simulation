@@ -92,7 +92,7 @@ void refresh(unsigned char komenda, unsigned char val)
 			Lcd_Cursor(1,10);
 			Lcd_Print("2.Power");
 			Lcd_Cursor(2,1);
-			Lcd_Print("3.Directory");
+			Lcd_Print("3.Direction");
 			Lcd_Cursor(3,1);
 			Lcd_Print("4.Lamp1");
 			Lcd_Cursor(3,9);
@@ -126,7 +126,7 @@ void refresh(unsigned char komenda, unsigned char val)
 		
 		case KIERUNEK:
 			Lcd_Cursor(1,1);
-			Lcd_Print("Set Directory");
+			Lcd_Print("Set Direction");
 			Lcd_Cursor(2,1);
 			Lcd_Print("1 - LEFT");
 			Lcd_Cursor(3,1);
@@ -181,4 +181,5 @@ void main(void)
 			odebrano_nowy_pakiet = 0;
 		}
 	}
+
 }
