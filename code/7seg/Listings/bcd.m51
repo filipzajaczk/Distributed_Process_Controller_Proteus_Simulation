@@ -1,0 +1,191 @@
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    01/29/2026  16:19:38  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.4.0, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\bcd.obj TO .\Objects\bcd PRINT (.\Listings\bcd.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\bcd.obj (BCD)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  .\Objects\bcd (BCD)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0006H     UNIT         ?DT?BCD
+                    000EH     0012H                  *** GAP ***
+            BIT     0020H.0   0000H.1   UNIT         ?BI?BCD
+                    0020H.1   0000H.7                *** GAP ***
+            IDATA   0021H     0001H     UNIT         ?STACK
+
+            * * * * * * *  X D A T A   M E M O R Y  * * * * * * *
+                    0000H     FD00H                  *** GAP ***
+            XDATA   FD00H     0001H     ABSOLUTE     
+                    FD01H     00FFH                  *** GAP ***
+            XDATA   FE00H     0001H     ABSOLUTE     
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     0008H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+                    000EH     0015H                  *** GAP ***
+            CODE    0023H     0003H     ABSOLUTE     
+                    0026H     07DAH                  *** GAP ***
+            CODE    0800H     008CH     UNIT         ?C_C51STARTUP
+            CODE    088CH     003FH     UNIT         ?PR?WYSWIETL_BCD?BCD
+            CODE    08CBH     003AH     UNIT         ?PR?ODEBRANIE?BCD
+            CODE    0905H     001DH     UNIT         ?PR?INIT?BCD
+            CODE    0922H     0017H     UNIT         ?PR?MAIN?BCD
+            CODE    0939H     0015H     UNIT         ?C_INITSEG
+            CODE    094EH     000AH     UNIT         ?CO?BCD
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\bcd (BCD)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?PR?WYSWIETL_BCD?BCD
+  +--> ?CO?BCD
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  01/29/2026  16:19:38  PAGE 2
+
+
+
+*** NEW ROOT ***************************************************
+
+?C_C51STARTUP
+  +--> ?PR?MAIN?BCD
+  +--> ?C_INITSEG
+
+?PR?MAIN?BCD
+  +--> ?PR?INIT?BCD
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\bcd (BCD)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        BCD
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:000AH         PUBLIC        odebrana_komenda
+  B:00A8H.7       PUBLIC        EA
+  B:00B0H.4       PUBLIC        P3_4
+  B:00A8H.4       PUBLIC        ES
+  C:088CH         PUBLIC        wyswietl_bcd
+  B:0098H.0       PUBLIC        RI
+  C:0922H         PUBLIC        main
+  C:08CBH         PUBLIC        odebranie
+  D:0099H         PUBLIC        SBUF
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  C:0905H         PUBLIC        init
+  D:000BH         PUBLIC        odebrana_dana
+  C:094EH         PUBLIC        kody
+  X:FD00H         PUBLIC        prawy_disp
+  B:00A8H.1       PUBLIC        ET0
+  D:008CH         PUBLIC        TH0
+  D:008DH         PUBLIC        TH1
+  D:008AH         PUBLIC        TL0
+  D:008BH         PUBLIC        TL1
+  X:FE00H         PUBLIC        lewy_disp
+  B:0088H.4       PUBLIC        TR0
+  B:0088H.6       PUBLIC        TR1
+  B:0020H.0       PUBLIC        odebrano_nowy_pakiet
+  D:000CH         PUBLIC        i
+  D:000DH         PUBLIC        j
+  -------         PROC          ODEBRANIE
+  -------         DO            
+  D:0008H         SYMBOL        czekam
+  D:0009H         SYMBOL        temp
+  D:0007H         SYMBOL        bajt
+  -------         ENDDO         
+  C:08CBH         LINE#         31
+  C:08D6H         LINE#         37
+  C:08D9H         LINE#         38
+  C:08D9H         LINE#         39
+  C:08DBH         LINE#         40
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  01/29/2026  16:19:38  PAGE 3
+
+
+  C:08DDH         LINE#         42
+  C:08E1H         LINE#         43
+  C:08E1H         LINE#         44
+  C:08E8H         LINE#         45
+  C:08E8H         LINE#         46
+  C:08EDH         LINE#         47
+  C:08F0H         LINE#         48
+  C:08F0H         LINE#         49
+  C:08F2H         LINE#         52
+  C:08F2H         LINE#         53
+  C:08F5H         LINE#         54
+  C:08F7H         LINE#         55
+  C:08F9H         LINE#         56
+  C:08FCH         LINE#         57
+  C:08FCH         LINE#         58
+  C:08FCH         LINE#         60
+  -------         ENDPROC       ODEBRANIE
+  -------         PROC          WYSWIETL_BCD
+  C:088CH         LINE#         62
+  C:0896H         LINE#         64
+  C:0899H         LINE#         65
+  C:089CH         LINE#         66
+  C:08B0H         LINE#         67
+  C:08C0H         LINE#         68
+  -------         ENDPROC       WYSWIETL_BCD
+  -------         PROC          INIT
+  C:0905H         LINE#         70
+  C:0905H         LINE#         72
+  C:0905H         LINE#         73
+  C:0908H         LINE#         74
+  C:090BH         LINE#         75
+  C:090EH         LINE#         76
+  C:0911H         LINE#         77
+  C:0913H         LINE#         78
+  C:0916H         LINE#         79
+  C:0919H         LINE#         80
+  C:091BH         LINE#         81
+  C:091DH         LINE#         82
+  C:091FH         LINE#         83
+  C:0921H         LINE#         84
+  -------         ENDPROC       INIT
+  -------         PROC          MAIN
+  C:0922H         LINE#         87
+  C:0922H         LINE#         89
+  C:0924H         LINE#         90
+  C:0927H         LINE#         91
+  C:092AH         LINE#         93
+  C:092EH         LINE#         94
+  C:0932H         LINE#         96
+  C:0932H         LINE#         97
+  C:0932H         LINE#         98
+  C:0935H         LINE#         99
+  C:0935H         LINE#         100
+  C:0937H         LINE#         101
+  C:0937H         LINE#         102
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        BCD
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  01/29/2026  16:19:38  PAGE 4
+
+
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 00D1H BYTE (10%) *
+******************************************************************************
+
+Program Size: data=15.1 xdata=2 code=353
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

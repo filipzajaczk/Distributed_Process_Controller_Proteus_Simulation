@@ -1,0 +1,214 @@
+C51 COMPILER V9.60.7.0   LCD_MAIN                                                          02/23/2026 13:01:57 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LCD_MAIN
+OBJECT MODULE PLACED IN .\Objects\lcd_main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE lcd_main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\
+                    -lcd_main.lst) TABS(2) OBJECT(.\Objects\lcd_main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include <string.h>
+   3          #include <stdio.h>
+   4          
+   5          //adresy urzadzen
+   6          #define KLAWIATURA  0xF0
+   7          #define LCD     0xE0
+   8          #define BCD     0xD0
+   9          #define SILNIK  0xB0
+  10          
+  11          //komendy
+  12          #define OBROTY  0x01
+  13          #define MOC  0x02
+  14          #define KIERUNEK      0x03
+  15          #define GRZANIE_L1    0x04
+  16          #define GRZANIE_L2    0x05
+  17          #define START         0x06
+  18          #define MENU          0x07
+  19          #define POKAZ_MENU    0x08
+  20          
+  21          volatile bit odebrano_nowy_pakiet = 0;
+  22          volatile unsigned char odebrana_komenda = 0;
+  23          volatile unsigned char odebrana_dana = 0;
+  24          
+  25          extern void LcdInit();
+  26          extern void LcdWelcome();
+  27          extern void Lcd_Cursor (char row, char column);
+  28          extern void Lcd_DisplayCharacter (char a_char);
+  29          extern void Lcd_Clear(void); 
+  30          extern void Lcd_Print(char *string);
+  31            
+  32          extern void Lcd_DisplayString (char row, char column, char *string);
+  33          extern void Lcd_DefineChar(unsigned char code_pos, unsigned char *pattern);
+  34          
+  35          sbit DE = P3^4;
+  36          unsigned char data Var1, Var2, Var3;
+  37          volatile unsigned char data Kod;
+  38          volatile bit updateScreen = 0;
+  39          
+  40          
+  41          void SerialInit(void)
+  42          {
+  43   1        TMOD = 0x20;
+  44   1        TH1 = 0xFD;   
+  45   1        TL1 = 0xFD;
+  46   1        SCON = 0x50;
+  47   1        TR1 = 1;
+  48   1        ES = 1;
+  49   1        EA = 1;
+  50   1      }
+  51          
+  52          void odebranie() interrupt 4
+  53          {
+  54   1        static unsigned char czekam = 0;
+C51 COMPILER V9.60.7.0   LCD_MAIN                                                          02/23/2026 13:01:57 PAGE 2   
+
+  55   1        static unsigned char temp = 0;
+  56   1        unsigned char bajt;
+  57   1        
+  58   1        if(RI)
+  59   1        {
+  60   2          bajt = SBUF;
+  61   2          RI = 0;
+  62   2          
+  63   2          if (czekam == 0) 
+  64   2          {
+  65   3            if ((bajt & 0xF0) == LCD)
+  66   3            {
+  67   4              temp = bajt & 0x0F;
+  68   4              czekam = 1;
+  69   4            }
+  70   3          }
+  71   2          else
+  72   2          {
+  73   3            odebrana_komenda = temp;
+  74   3            odebrana_dana = bajt;
+  75   3            odebrano_nowy_pakiet = 1;
+  76   3            czekam = 0;
+  77   3          }
+  78   2        }
+  79   1          
+  80   1      }
+  81          
+  82          void refresh(unsigned char komenda, unsigned char val)
+  83          {
+  84   1        char bufor[16];
+  85   1        Lcd_Clear();
+  86   1        
+  87   1        switch(komenda)
+  88   1        {
+  89   2          case POKAZ_MENU:
+  90   2            Lcd_Cursor(1,1);
+  91   2            Lcd_Print("1.Turns");
+  92   2            Lcd_Cursor(1,10);
+  93   2            Lcd_Print("2.Power");
+  94   2            Lcd_Cursor(2,1);
+  95   2            Lcd_Print("3.Directory");
+  96   2            Lcd_Cursor(3,1);
+  97   2            Lcd_Print("4.Lamp1");
+  98   2            Lcd_Cursor(3,9);
+  99   2            Lcd_Print("5.Lamp2");
+ 100   2            Lcd_Cursor(4,1);
+ 101   2            Lcd_Print("6.Start");
+ 102   2          
+ 103   2          break;
+ 104   2          
+ 105   2          case OBROTY:
+ 106   2            Lcd_Cursor(1,1);
+ 107   2            Lcd_Print("Set Turn Count");
+ 108   2            Lcd_Cursor(2,1);
+ 109   2            sprintf(bufor, "Turns: %d    ", (int)val);
+ 110   2            Lcd_Print(bufor);
+ 111   2            Lcd_Cursor(4,1);
+ 112   2            Lcd_Print("* - SAVE");
+ 113   2          break;
+ 114   2          
+ 115   2          case MOC:
+ 116   2            Lcd_Cursor(1,1);
+C51 COMPILER V9.60.7.0   LCD_MAIN                                                          02/23/2026 13:01:57 PAGE 3   
+
+ 117   2            Lcd_Print("Set power");
+ 118   2            Lcd_Cursor(2,1);
+ 119   2            sprintf(bufor, "Power: %d    ", (int)val);
+ 120   2            Lcd_Print(bufor);
+ 121   2            Lcd_Cursor(3,1);
+ 122   2            Lcd_Print("# - 100%");
+ 123   2            Lcd_Cursor(4,1);
+ 124   2            Lcd_Print("* - SAVE");
+ 125   2          break;
+ 126   2          
+ 127   2          case KIERUNEK:
+ 128   2            Lcd_Cursor(1,1);
+ 129   2            Lcd_Print("Set Directory");
+ 130   2            Lcd_Cursor(2,1);
+ 131   2            Lcd_Print("1 - LEFT");
+ 132   2            Lcd_Cursor(3,1);
+ 133   2            Lcd_Print("2 - RIGHT");
+ 134   2          break;
+ 135   2          
+ 136   2          case GRZANIE_L1:
+ 137   2            Lcd_Cursor(1,1);
+ 138   2            Lcd_Print("Set Lamp 1 Power");
+ 139   2            Lcd_Cursor(2,1);
+ 140   2            sprintf(bufor, "Power: %d    ", (int)val);
+ 141   2            Lcd_Print(bufor);
+ 142   2            Lcd_Cursor(3,1);
+ 143   2            Lcd_Print("# - 100%");
+ 144   2            Lcd_Cursor(4,1);
+ 145   2            Lcd_Print("* - SAVE");
+ 146   2          break;
+ 147   2          
+ 148   2          case GRZANIE_L2:
+ 149   2            Lcd_Cursor(1,1);
+ 150   2            Lcd_Print("Set Lamp 2 Power");
+ 151   2            Lcd_Cursor(2,1);
+ 152   2            sprintf(bufor, "Power: %d    ", (int)val);
+ 153   2            Lcd_Print(bufor);
+ 154   2            Lcd_Cursor(3,1);
+ 155   2            Lcd_Print("# - 100%");
+ 156   2            Lcd_Cursor(4,1);
+ 157   2            Lcd_Print("* - SAVE");
+ 158   2          break;
+ 159   2          
+ 160   2          case START:
+ 161   2            Lcd_Cursor(1,1);
+ 162   2            Lcd_Print("Motor running..");     
+ 163   2            Lcd_Cursor(2,1);
+ 164   2            Lcd_Print("Please wait..");
+ 165   2          break;
+ 166   2        }
+ 167   1      }
+ 168          
+ 169          void main(void)
+ 170          {
+ 171   1        P3_4 = 0;
+ 172   1        LcdInit();
+ 173   1        SerialInit();
+ 174   1        
+ 175   1        refresh(POKAZ_MENU, 7);
+ 176   1      
+ 177   1        while(1) {
+ 178   2          if (odebrano_nowy_pakiet) 
+C51 COMPILER V9.60.7.0   LCD_MAIN                                                          02/23/2026 13:01:57 PAGE 4   
+
+ 179   2          {
+ 180   3            refresh(odebrana_komenda, odebrana_dana);
+ 181   3            odebrano_nowy_pakiet = 0;
+ 182   3          }
+ 183   2        }
+ 184   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    673    ----
+   CONSTANT SIZE    =    220    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8      18
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

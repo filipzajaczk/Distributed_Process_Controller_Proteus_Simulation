@@ -1,0 +1,5 @@
+".\Objects\lcd_main.obj",
+".\Objects\LCD.obj",
+".\Objects\wait1.obj" 
+TO ".\Objects\lcd" 
+PRINT(".\Listings\lcd.m51") RAMSIZE(256) 

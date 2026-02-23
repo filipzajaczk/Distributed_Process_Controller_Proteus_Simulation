@@ -1,0 +1,3 @@
+".\Objects\silnik.obj" 
+TO ".\Objects\silnik" 
+PRINT(".\Listings\silnik.m51") RAMSIZE(256) 

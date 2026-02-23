@@ -1,0 +1,305 @@
+C51 COMPILER V9.60.7.0   KLAWIATURA                                                        02/23/2026 17:44:15 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KLAWIATURA
+OBJECT MODULE PLACED IN .\Objects\klawiatura.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE klawiatura.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\klawiatura.lst) TABS(2) OBJECT(.\Objects\klawiatura.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          
+   3          unsigned int jednosc = 0;
+   4          unsigned int dziesiatka = 0;
+   5          unsigned int liczba = 0;
+   6          unsigned char klawisz;
+   7          char cyfra;
+   8          
+   9          volatile bit odebrano_nowy_pakiet = 0;
+  10          volatile unsigned char odebrana_komenda = 0;
+  11          volatile unsigned char odebrana_dana = 0;
+  12            
+  13          //adresy urzadzen
+  14          #define KLAWIATURA  0xF0
+  15          #define LCD     0xE0
+  16          #define BCD     0xD0
+  17          #define SILNIK  0xB0
+  18          
+  19          //komendy
+  20          #define OBROTY  0x01
+  21          #define MOC  0x02
+  22          #define KIERUNEK      0x03
+  23          #define GRZANIE_L1    0x04
+  24          #define GRZANIE_L2    0x05
+  25          #define START         0x06
+  26          #define MENU          0x07
+  27          #define POKAZ_MENU    0x08
+  28          
+  29          
+  30          void delay(unsigned int t) {
+  31   1          unsigned int i, j;
+  32   1          for(i=0; i<t; i++)
+  33   1              for(j=0; j<100; j++);
+  34   1      }
+  35          
+  36          
+  37          void Send(unsigned char Value){
+  38   1        P3_4 = 1;
+  39   1        TI = 0; 
+  40   1        SBUF = Value;
+  41   1        while(TI==0){;}
+  42   1        TI = 0;
+  43   1        P3_4 = 0;
+  44   1      }
+  45          
+  46          void wyslij_pakiet(unsigned char adresat, unsigned char komenda, unsigned int dana) {
+  47   1        unsigned char pakiet1;
+  48   1        pakiet1 = adresat | komenda;
+  49   1        Send(pakiet1);
+  50   1        Send(dana);
+  51   1      }
+  52          
+  53          
+  54          
+C51 COMPILER V9.60.7.0   KLAWIATURA                                                        02/23/2026 17:44:15 PAGE 2   
+
+  55          unsigned char code scan[] = {0xF7, 0xFD, 0xFB};
+  56          
+  57          unsigned char pobierz_klawisz(void) {
+  58   1        unsigned char wcisniety_kod = 0;
+  59   1        unsigned char odczyt = 0;
+  60   1        unsigned int i = 0;
+  61   1      
+  62   1        while(1) 
+  63   1        {
+  64   2          for(i = 0; i < 3; i++) 
+  65   2          {
+  66   3            P2 = scan[i];
+  67   3            odczyt = P2; 
+  68   3      
+  69   3            if (odczyt != scan[i])
+  70   3            {
+  71   4              wcisniety_kod = odczyt;
+  72   4              
+  73   4              do {
+  74   5                P2 = scan[i]; 
+  75   5              } while (P2 != scan[i]);
+  76   4      
+  77   4              return wcisniety_kod;
+  78   4            }
+  79   3          }
+  80   2        }
+  81   1      }
+  82          
+  83          char zdekoduj_cyfre(unsigned char kod) {
+  84   1        switch(kod) 
+  85   1        {
+  86   2          case 0xE7: return 1;
+  87   2          case 0xD7: return 4;
+  88   2          case 0xB7: return 7;
+  89   2          case 0x77: return 10; // *
+  90   2          case 0xEB: return 2;
+  91   2          case 0xDB: return 5;
+  92   2          case 0xBB: return 8;
+  93   2          case 0x7B: return 0;
+  94   2          case 0xED: return 3;
+  95   2          case 0xDD: return 6;
+  96   2          case 0xBD: return 9;
+  97   2          case 0x7D: return 11; // #
+  98   2          default:   return -1;
+  99   2        }
+ 100   1      }
+ 101          
+ 102          void init()
+ 103          {
+ 104   1        P2 = 1;
+ 105   1        P3_4 = 0;
+ 106   1        TMOD = 0x20;
+ 107   1        TH1 = 0xFD;
+ 108   1        TL1 = 0xFD;
+ 109   1        SCON = 0x50;
+ 110   1        TR1 = 1;
+ 111   1        EA = 1;
+ 112   1        ES = 1;
+ 113   1      }
+ 114          
+ 115          void main(void) {
+ 116   1        init();
+C51 COMPILER V9.60.7.0   KLAWIATURA                                                        02/23/2026 17:44:15 PAGE 3   
+
+ 117   1      
+ 118   1        while(1) 
+ 119   1        {
+ 120   2          wyslij_pakiet(LCD, POKAZ_MENU, 7);
+ 121   2          klawisz = pobierz_klawisz(); 
+ 122   2          cyfra = zdekoduj_cyfre(klawisz);
+ 123   2          jednosc = 0;
+ 124   2          dziesiatka = 0;
+ 125   2          switch(cyfra)
+ 126   2          {
+ 127   3            case 1: //ustawienie ile obrotow ma zrobic silnik
+ 128   3              liczba = 1;
+ 129   3              wyslij_pakiet(LCD, OBROTY, liczba);
+ 130   3              while(1)
+ 131   3              {
+ 132   4                klawisz = pobierz_klawisz(); 
+ 133   4                cyfra = zdekoduj_cyfre(klawisz);
+ 134   4                if(cyfra == 10) //zakceptowanie
+ 135   4                {
+ 136   5                  wyslij_pakiet(LCD, POKAZ_MENU, 7);              
+ 137   5                  break;
+ 138   5                }
+ 139   4                else
+ 140   4                {
+ 141   5                  dziesiatka = jednosc;
+ 142   5                  jednosc = cyfra;
+ 143   5                  liczba = dziesiatka * 10 + jednosc;
+ 144   5                  wyslij_pakiet(LCD, OBROTY, liczba);
+ 145   5                  delay(5);
+ 146   5                  wyslij_pakiet(BCD, OBROTY, liczba);
+ 147   5                  delay(5);
+ 148   5                  wyslij_pakiet(SILNIK, OBROTY, liczba);
+ 149   5                }
+ 150   4              }
+ 151   3            break;
+ 152   3            case 2: //ustawienie mocy w % pracy silnika
+ 153   3              liczba = 1;
+ 154   3              wyslij_pakiet(LCD, MOC, liczba);
+ 155   3              //wyslij silnikowi
+ 156   3              while(1)
+ 157   3              {
+ 158   4                klawisz = pobierz_klawisz(); 
+ 159   4                cyfra = zdekoduj_cyfre(klawisz);
+ 160   4                if(cyfra == 10) //zakceptowanie
+ 161   4                {
+ 162   5                  if(liczba == 0) 
+ 163   5                  {
+ 164   6                    wyslij_pakiet(SILNIK, MOC, 50);
+ 165   6                  }
+ 166   5                  wyslij_pakiet(LCD, POKAZ_MENU, 7);
+ 167   5                  break;
+ 168   5                }
+ 169   4                else if (cyfra == 11) //ustawienie 100%
+ 170   4                {
+ 171   5                  wyslij_pakiet(LCD, MOC, 100);
+ 172   5                  wyslij_pakiet(SILNIK, MOC, 100);
+ 173   5                }
+ 174   4                else
+ 175   4                {
+ 176   5                  dziesiatka = jednosc;
+ 177   5                  jednosc = cyfra;
+ 178   5                  liczba = dziesiatka * 10 + jednosc;
+C51 COMPILER V9.60.7.0   KLAWIATURA                                                        02/23/2026 17:44:15 PAGE 4   
+
+ 179   5                  wyslij_pakiet(LCD, MOC, liczba);
+ 180   5                  delay(5);
+ 181   5                  wyslij_pakiet(SILNIK, MOC, liczba);
+ 182   5                }
+ 183   4              }
+ 184   3            break;
+ 185   3            case 3: //w ktora strone silniczek ma sie krecic
+ 186   3              wyslij_pakiet(LCD, KIERUNEK, 1);
+ 187   3              while(1)
+ 188   3              {
+ 189   4                klawisz = pobierz_klawisz(); 
+ 190   4                cyfra = zdekoduj_cyfre(klawisz);
+ 191   4                if (cyfra == 1)
+ 192   4                {
+ 193   5                  //wyslij_pakiet(LCD, KIERUNEK, 1);
+ 194   5                  wyslij_pakiet(LCD, POKAZ_MENU, 7);
+ 195   5                  delay(5);
+ 196   5                  wyslij_pakiet(SILNIK, KIERUNEK, 1);
+ 197   5                  break;
+ 198   5                }
+ 199   4                else if (cyfra == 2)
+ 200   4                {
+ 201   5                  //wyslij_pakiet(LCD, KIERUNEK, 2);
+ 202   5                  wyslij_pakiet(LCD, POKAZ_MENU, 7);
+ 203   5                  delay(5);
+ 204   5                  wyslij_pakiet(SILNIK, KIERUNEK, 2);
+ 205   5                  break;
+ 206   5                }
+ 207   4              }       
+ 208   3            break;
+ 209   3            case 4: //ustawienie grzania pierwszej lampy
+ 210   3              liczba = 0;
+ 211   3              wyslij_pakiet(LCD, GRZANIE_L1, liczba);
+ 212   3              //wyslij lampie
+ 213   3              while(1)
+ 214   3              {
+ 215   4                klawisz = pobierz_klawisz(); 
+ 216   4                cyfra = zdekoduj_cyfre(klawisz);
+ 217   4                if(cyfra == 10) //zakceptowanie
+ 218   4                {
+ 219   5                  wyslij_pakiet(LCD, POKAZ_MENU, 7);
+ 220   5                  break;
+ 221   5                }
+ 222   4                else if (cyfra == 11) //ustawienie 100%
+ 223   4                {
+ 224   5                  wyslij_pakiet(LCD, GRZANIE_L1, 100);
+ 225   5                  wyslij_pakiet(SILNIK, GRZANIE_L1, 100);
+ 226   5                }
+ 227   4                else
+ 228   4                {
+ 229   5                  dziesiatka = jednosc;
+ 230   5                  jednosc = cyfra;
+ 231   5                  liczba = dziesiatka * 10 + jednosc;
+ 232   5                  wyslij_pakiet(LCD, GRZANIE_L1, liczba);
+ 233   5                  delay(5);
+ 234   5                  wyslij_pakiet(SILNIK, GRZANIE_L1, liczba);
+ 235   5                }
+ 236   4              }
+ 237   3            break;
+ 238   3            case 5: //ustawienie grzania drugiej lampy
+ 239   3              liczba = 0;
+ 240   3              wyslij_pakiet(LCD, GRZANIE_L2, liczba);
+C51 COMPILER V9.60.7.0   KLAWIATURA                                                        02/23/2026 17:44:15 PAGE 5   
+
+ 241   3              //wyslij lampie
+ 242   3              while(1)
+ 243   3              {
+ 244   4                klawisz = pobierz_klawisz(); 
+ 245   4                cyfra = zdekoduj_cyfre(klawisz);
+ 246   4                if(cyfra == 10) //zakceptowanie
+ 247   4                {
+ 248   5                  wyslij_pakiet(LCD, POKAZ_MENU, 7);
+ 249   5                  break;
+ 250   5                }
+ 251   4                else if (cyfra == 11) //ustawienie 100%
+ 252   4                {
+ 253   5                  wyslij_pakiet(LCD, GRZANIE_L2, 100);
+ 254   5                  wyslij_pakiet(SILNIK, GRZANIE_L2, 100);
+ 255   5                }
+ 256   4                else
+ 257   4                {
+ 258   5                  dziesiatka = jednosc;
+ 259   5                  jednosc = cyfra;
+ 260   5                  liczba = dziesiatka * 10 + jednosc;
+ 261   5                  wyslij_pakiet(LCD, GRZANIE_L2, liczba);
+ 262   5                  delay(5);
+ 263   5                  wyslij_pakiet(SILNIK, GRZANIE_L2, liczba);
+ 264   5                }
+ 265   4              }
+ 266   3            break;
+ 267   3            case 6:
+ 268   3              wyslij_pakiet(LCD, START, 0);
+ 269   3              wyslij_pakiet(SILNIK, START, 0);
+ 270   3            break;
+ 271   3          }
+ 272   2        }
+ 273   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    818    ----
+   CONSTANT SIZE    =      3    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

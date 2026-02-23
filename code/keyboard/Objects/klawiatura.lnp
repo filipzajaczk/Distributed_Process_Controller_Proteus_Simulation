@@ -1,0 +1,3 @@
+".\Objects\klawiatura.obj" 
+TO ".\Objects\klawiatura" 
+PRINT(".\Listings\klawiatura.m51") RAMSIZE(256) 
