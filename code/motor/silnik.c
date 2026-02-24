@@ -48,8 +48,8 @@ void wyslij_pakiet(unsigned char adresat, unsigned char komenda, unsigned int da
 	Send(pakiet1);
 	Send(dana);
 }
-//zainicjowany jest licznik kt髍y tyka sobie w tle ale ograniczamy go do modulo 10. Moc okreslamy jako ulamek
-//np. na 3 z 10 tykniec ma byc dostarczany prad do zar體y, w taki spos骲 dostarczamy 30% mocy zarowki
+//zainicjowany jest licznik kt贸ry tyka sobie w tle ale ograniczamy go do modulo 10. Moc okreslamy jako ulamek
+//np. na 3 z 10 tykniec ma byc dostarczany prad do zar贸wy, w taki spos贸b dostarczamy 30% mocy zarowki
 void zarowa() interrupt 1
 {
 	
@@ -72,11 +72,11 @@ void zarowa() interrupt 1
 	else P2_6 = 0;
 }
 
-//przy kazdym impulsie na port P3.2 (INT0) wykonuje sie ta funkcja zliczania obrot體
+//przy kazdym impulsie na port P3.2 (INT0) wykonuje sie ta funkcja zliczania obrot贸w
 void licz_obroty(void) interrupt 0 
 {
 	obroty_licznik --;
-	if (obroty_licznik > 0)
+	if (obroty_licznik >= 0)
 	{
 		aktualizuj_bcd = 1;
 	}
@@ -195,3 +195,4 @@ void main(void)
 	}
 	
 }
+
